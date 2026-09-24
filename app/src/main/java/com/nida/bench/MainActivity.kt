@@ -5,317 +5,368 @@ import android.os.Bundle
 import android.graphics.*
 import android.view.*
 import android.content.Context
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.random.Random
+import kotlin.math.sin
+import kotlin.math.cos
 
 class MainActivity : Activity() {
+
+    private lateinit var benchView: GPUView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(BenchmarkView(this))
+        benchView = GPUView(this)
+        setContentView(benchView)
     }
-}
 
-class BenchmarkView(context: Context) : View(context) {
+    override fun onResume() {
+        super.onResume()
+        benchView.startBenchmark()
+    }
 
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    override fun onPause() {
+        benchView.stopBenchmark()
+        super.onPause()
+    }
 
-    private var running = false
+    class Particle(
+        var x: Float,
+        var y: Float,
+        var vx: Float,
+        var vy: Float,
+        var size: Float,
+        var phase: Float
+    )
 
-    private var startTime = 0L
-    private var frameCount = 0L
+    class GPUView(context: Context) : View(context) {
 
-    private var fps = 0.0
-    private var score = 0L
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-    private var rotation = 0f
+        private val particles = ArrayList<Particle>()
 
-    private val particles = ArrayList<Particle>()
+        private var running = false
+        private var startTime = 0L
+        private var lastFrameTime = 0L
 
-    init {
+        private var frameCount = 0
+        private var fps = 0f
+        private var minFps = 999f
 
-        paint.typeface = Typeface.create(
-            Typeface.DEFAULT,
-            Typeface.NORMAL
-        )
+        private var testTime = 0f
 
-        repeat(500) {
+        init {
+            textPaint.typeface = Typeface.DEFAULT_BOLD
+            textPaint.textSize = 42f
 
-            particles.add(
-                Particle(
-                    Random.nextFloat(),
-                    Random.nextFloat(),
-                    Random.nextFloat() * 2f + 1f,
-                    Random.nextFloat() * 360f
+            for (i in 0 until 700) {
+                particles.add(
+                    Particle(
+                        Random.nextFloat(),
+                        Random.nextFloat(),
+                        Random.nextFloat() * 0.004f - 0.002f,
+                        Random.nextFloat() * 0.004f - 0.002f,
+                        Random.nextFloat() * 18f + 4f,
+                        Random.nextFloat() * 6.28f
+                    )
                 )
-            )
-        }
-    }
-
-    override fun onDraw(canvas: Canvas) {
-
-        super.onDraw(canvas)
-
-        if (!running) {
-
-            drawHome(canvas)
-
-            return
-        }
-
-        drawBenchmark(canvas)
-
-        frameCount++
-
-        val elapsed = System.currentTimeMillis() - startTime
-
-        if (elapsed > 1000) {
-
-            fps =
-                frameCount.toDouble() /
-                (elapsed.toDouble() / 1000.0)
-
-            score += fps.toLong()
-
-            invalidate()
-        } else {
-
-            invalidate()
-        }
-    }
-
-    private fun drawHome(canvas: Canvas) {
-
-        canvas.drawColor(Color.WHITE)
-
-        paint.color = Color.BLACK
-        paint.textAlign = Paint.Align.CENTER
-
-        paint.textSize = 72f
-
-        canvas.drawText(
-            "NIDA BENCH",
-            width / 2f,
-            height / 3f,
-            paint
-        )
-
-        paint.textSize = 42f
-
-        canvas.drawText(
-            "GPU TEST",
-            width / 2f,
-            height / 3f + 90f,
-            paint
-        )
-
-        paint.color = Color.rgb(0, 128, 255)
-
-        canvas.drawRoundRect(
-            width / 2f - 260f,
-            height * 0.65f,
-            width / 2f + 260f,
-            height * 0.65f + 120f,
-            30f,
-            30f,
-            paint
-        )
-
-        paint.color = Color.WHITE
-        paint.textSize = 36f
-
-        canvas.drawText(
-            "START",
-            width / 2f,
-            height * 0.65f + 76f,
-            paint
-        )
-
-        paint.color = Color.DKGRAY
-        paint.textSize = 24f
-
-        canvas.drawText(
-            "GPU描画性能を測定します",
-            width / 2f,
-            height * 0.65f + 180f,
-            paint
-        )
-    }
-
-    private fun drawBenchmark(canvas: Canvas) {
-
-        canvas.drawColor(Color.rgb(5, 5, 15))
-
-        val centerX = width / 2f
-        val centerY = height / 2f
-
-        rotation += 2f
-
-        // Large rotating objects
-
-        for (i in 0 until 80) {
-
-            val angle =
-                Math.toRadians(
-                    rotation.toDouble() +
-                    i * 4.5
-                )
-
-            val radius =
-                100f + (i % 10) * 45f
-
-            val x =
-                centerX +
-                cos(angle).toFloat() * radius
-
-            val y =
-                centerY +
-                sin(angle).toFloat() * radius
-
-            paint.color = Color.rgb(
-                (50 + i * 2) % 255,
-                (100 + i * 3) % 255,
-                (150 + i * 5) % 255
-            )
-
-            paint.style = Paint.Style.FILL
-
-            canvas.drawCircle(
-                x,
-                y,
-                18f + (i % 8) * 3f,
-                paint
-            )
-        }
-
-        // Particle system
-
-        for (particle in particles) {
-
-            particle.angle += particle.speed
-
-            val angle =
-                Math.toRadians(particle.angle.toDouble())
-
-            val distance =
-                100f +
-                particle.distance * 500f
-
-            val x =
-                centerX +
-                cos(angle).toFloat() * distance
-
-            val y =
-                centerY +
-                sin(angle).toFloat() * distance
-
-            paint.color = Color.WHITE
-
-            canvas.drawCircle(
-                x,
-                y,
-                particle.size * 3f,
-                paint
-            )
-        }
-
-        // UI
-
-        paint.textAlign = Paint.Align.LEFT
-        paint.color = Color.WHITE
-
-        paint.textSize = 34f
-
-        canvas.drawText(
-            "GPU TEST",
-            30f,
-            55f,
-            paint
-        )
-
-        paint.textSize = 26f
-
-        canvas.drawText(
-            "FPS  %.1f".format(fps),
-            30f,
-            100f,
-            paint
-        )
-
-        canvas.drawText(
-            "FRAMES  $frameCount",
-            30f,
-            140f,
-            paint
-        )
-
-        paint.textAlign = Paint.Align.RIGHT
-
-        canvas.drawText(
-            "RUNNING",
-            width - 30f,
-            55f,
-            paint
-        )
-    }
-
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-
-        if (event.action != MotionEvent.ACTION_UP) {
-            return true
-        }
-
-        if (!running) {
-
-            val buttonTop = height * 0.65f
-            val buttonBottom = buttonTop + 120f
-
-            if (
-                event.x > width / 2f - 260f &&
-                event.x < width / 2f + 260f &&
-                event.y > buttonTop &&
-                event.y < buttonBottom
-            ) {
-
-                startBenchmark()
             }
 
-        } else {
-
-            stopBenchmark()
+            setBackgroundColor(Color.BLACK)
         }
 
-        return true
+        fun startBenchmark() {
+            running = true
+            startTime = System.currentTimeMillis()
+            lastFrameTime = startTime
+            frameCount = 0
+            fps = 0f
+            minFps = 999f
+            testTime = 0f
+
+            postInvalidateOnAnimation()
+        }
+
+        fun stopBenchmark() {
+            running = false
+        }
+
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+
+            if (!running) return
+
+            val now = System.currentTimeMillis()
+            val delta = (now - lastFrameTime).coerceAtMost(50L) / 1000f
+            lastFrameTime = now
+
+            testTime = (now - startTime) / 1000f
+
+            updateParticles(delta)
+            drawBackground(canvas)
+            drawParticles(canvas)
+            drawEffects(canvas)
+            drawInformation(canvas)
+
+            frameCount++
+
+            if (testTime > 1f) {
+                fps = frameCount / testTime
+
+                if (fps < minFps) {
+                    minFps = fps
+                }
+            }
+
+            if (testTime < 30f) {
+                postInvalidateOnAnimation()
+            } else {
+                running = false
+                drawFinished(canvas)
+            }
+        }
+
+        private fun updateParticles(delta: Float) {
+
+            for (particle in particles) {
+
+                particle.x += particle.vx * delta * 60f
+                particle.y += particle.vy * delta * 60f
+
+                particle.phase += delta * 3f
+
+                if (particle.x < 0f) particle.x = 1f
+                if (particle.x > 1f) particle.x = 0f
+
+                if (particle.y < 0f) particle.y = 1f
+                if (particle.y > 1f) particle.y = 0f
+            }
+        }
+
+        private fun drawBackground(canvas: Canvas) {
+
+            val width = width.toFloat()
+            val height = height.toFloat()
+
+            val centerX = width / 2f
+            val centerY = height / 2f
+
+            for (i in 0 until 25) {
+
+                val angle =
+                    testTime * 0.7f +
+                    i * 0.25f
+
+                val radius =
+                    100f +
+                    sin(testTime * 2f + i) * 80f +
+                    i * 20f
+
+                val x =
+                    centerX +
+                    cos(angle) * radius
+
+                val y =
+                    centerY +
+                    sin(angle) * radius
+
+                paint.color = Color.rgb(
+                    20 + i * 5,
+                    50 + i * 6,
+                    120 + i * 5
+                )
+
+                paint.style = Paint.Style.FILL
+
+                canvas.drawCircle(
+                    x,
+                    y,
+                    30f + i,
+                    paint
+                )
+            }
+        }
+
+        private fun drawParticles(canvas: Canvas) {
+
+            val width = width.toFloat()
+            val height = height.toFloat()
+
+            for (particle in particles) {
+
+                val x = particle.x * width
+                val y = particle.y * height
+
+                val pulse =
+                    sin(particle.phase) * 0.5f + 0.5f
+
+                val size =
+                    particle.size * (0.6f + pulse)
+
+                paint.color = Color.rgb(
+                    30,
+                    (120 + pulse * 100).toInt(),
+                    255
+                )
+
+                canvas.drawCircle(
+                    x,
+                    y,
+                    size,
+                    paint
+                )
+            }
+        }
+
+        private fun drawEffects(canvas: Canvas) {
+
+            val width = width.toFloat()
+            val height = height.toFloat()
+
+            val cx = width / 2f
+            val cy = height / 2f
+
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = 5f
+
+            for (i in 0 until 12) {
+
+                val rotation =
+                    testTime * (0.5f + i * 0.05f)
+
+                val radius =
+                    100f + i * 45f
+
+                val left =
+                    cx - radius
+
+                val top =
+                    cy - radius
+
+                val right =
+                    cx + radius
+
+                val bottom =
+                    cy + radius
+
+                canvas.save()
+
+                canvas.rotate(
+                    rotation * 40f,
+                    cx,
+                    cy
+                )
+
+                paint.color = Color.argb(
+                    100,
+                    50 + i * 10,
+                    100 + i * 8,
+                    255
+                )
+
+                canvas.drawOval(
+                    left,
+                    top,
+                    right,
+                    bottom,
+                    paint
+                )
+
+                canvas.restore()
+            }
+
+            paint.style = Paint.Style.FILL
+        }
+
+        private fun drawInformation(canvas: Canvas) {
+
+            paint.color = Color.WHITE
+            paint.textSize = 36f
+            paint.typeface = Typeface.DEFAULT_BOLD
+
+            canvas.drawText(
+                "NIDA BENCH",
+                30f,
+                55f,
+                paint
+            )
+
+            paint.textSize = 28f
+
+            canvas.drawText(
+                "GPU TEST",
+                30f,
+                95f,
+                paint
+            )
+
+            canvas.drawText(
+                "FPS  %.1f".format(fps),
+                30f,
+                145f,
+                paint
+            )
+
+            canvas.drawText(
+                "TIME  %.1fs".format(testTime),
+                30f,
+                185f,
+                paint
+            )
+
+            canvas.drawText(
+                "OBJECTS  %d".format(particles.size),
+                30f,
+                225f,
+                paint
+            )
+        }
+
+        private fun drawFinished(canvas: Canvas) {
+
+            paint.color = Color.BLACK
+
+            canvas.drawRect(
+                0f,
+                0f,
+                width.toFloat(),
+                height.toFloat(),
+                paint
+            )
+
+            paint.color = Color.WHITE
+            paint.textAlign = Paint.Align.CENTER
+            paint.typeface = Typeface.DEFAULT_BOLD
+
+            paint.textSize = 52f
+
+            canvas.drawText(
+                "GPU TEST COMPLETE",
+                width / 2f,
+                height / 2f - 80f,
+                paint
+            )
+
+            paint.textSize = 44f
+
+            canvas.drawText(
+                "AVG  %.1f FPS".format(fps),
+                width / 2f,
+                height / 2f,
+                paint
+            )
+
+            paint.textSize = 32f
+
+            canvas.drawText(
+                "MIN  %.1f FPS".format(minFps),
+                width / 2f,
+                height / 2f + 60f,
+                paint
+            )
+
+            paint.textAlign = Paint.Align.LEFT
+        }
     }
-
-    private fun startBenchmark() {
-
-        running = true
-
-        startTime = System.currentTimeMillis()
-
-        frameCount = 0
-
-        score = 0
-
-        fps = 0.0
-
-        invalidate()
-    }
-
-    private fun stopBenchmark() {
-
-        running = false
-
-        invalidate()
-    }
-
-    data class Particle(
-        var distance: Float,
-        var size: Float,
-        var speed: Float,
-        var angle: Float
-    )
 }
