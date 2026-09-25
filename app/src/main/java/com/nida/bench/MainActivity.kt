@@ -360,8 +360,6 @@ class MainActivity : Activity() {
                     "Fingerprint" ->
                         Build.VERSION.SDK_INT >= 23
 
-                    "Vibrator" ->
-                        hasFeature(PackageManager.FEATURE_VIBRATOR)
 
                     else -> false
                 }
