@@ -596,7 +596,9 @@ private fun sensorTypeName(type: Int): String {
             "Sensor Type $type"
     }
 }
-
+private fun drawFeatureChecker(canvas: Canvas) {
+    // 既存コード
+}
         // GPU
         private fun drawGPU(canvas: Canvas) {
 
