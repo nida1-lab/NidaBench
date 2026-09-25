@@ -536,6 +536,67 @@ if (screen == "gpu") {
             }
         }
 
+// Sensor Names
+private fun sensorTypeName(type: Int): String {
+
+    return when (type) {
+
+        Sensor.TYPE_ACCELEROMETER ->
+            "Accelerometer"
+
+        Sensor.TYPE_GYROSCOPE ->
+            "Gyroscope"
+
+        Sensor.TYPE_MAGNETIC_FIELD ->
+            "Magnetometer"
+
+        Sensor.TYPE_LIGHT ->
+            "Light Sensor"
+
+        Sensor.TYPE_PROXIMITY ->
+            "Proximity Sensor"
+
+        Sensor.TYPE_PRESSURE ->
+            "Barometer"
+
+        Sensor.TYPE_GRAVITY ->
+            "Gravity Sensor"
+
+        Sensor.TYPE_LINEAR_ACCELERATION ->
+            "Linear Acceleration"
+
+        Sensor.TYPE_ROTATION_VECTOR ->
+            "Rotation Vector"
+
+        Sensor.TYPE_GAME_ROTATION_VECTOR ->
+            "Game Rotation Vector"
+
+        Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR ->
+            "Geomagnetic Rotation"
+
+        Sensor.TYPE_STEP_COUNTER ->
+            "Step Counter"
+
+        Sensor.TYPE_STEP_DETECTOR ->
+            "Step Detector"
+
+        Sensor.TYPE_SIGNIFICANT_MOTION ->
+            "Significant Motion"
+
+        Sensor.TYPE_HEART_RATE ->
+            "Heart Rate"
+
+        Sensor.TYPE_RELATIVE_HUMIDITY ->
+            "Humidity"
+
+        Sensor.TYPE_AMBIENT_TEMPERATURE ->
+            "Ambient Temperature"
+
+        else ->
+            "Sensor Type $type"
+    }
+}
+
         // GPU
         private fun drawGPU(canvas: Canvas) {
 
