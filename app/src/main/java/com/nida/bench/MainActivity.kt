@@ -536,66 +536,86 @@ if (screen == "gpu") {
             }
         }
 
-// Sensor Names
-private fun sensorTypeName(type: Int): String {
+// Sensor Checker
+private fun drawSensorChecker(canvas: Canvas) {
 
-    return when (type) {
+    canvas.drawColor(Color.BLACK)
 
-        Sensor.TYPE_ACCELEROMETER ->
-            "Accelerometer"
+    drawHeader(canvas, "SENSOR CHECK")
 
-        Sensor.TYPE_GYROSCOPE ->
-            "Gyroscope"
+    if (sensorList.isEmpty()) {
+        sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL)
+    }
 
-        Sensor.TYPE_MAGNETIC_FIELD ->
-            "Magnetometer"
+    paint.color = Color.WHITE
+    paint.textSize = 24f
+    paint.typeface = Typeface.DEFAULT_BOLD
 
-        Sensor.TYPE_LIGHT ->
-            "Light Sensor"
+    canvas.drawText(
+        "Detected Sensors: ${sensorList.size}",
+        30f,
+        125f,
+        paint
+    )
 
-        Sensor.TYPE_PROXIMITY ->
-            "Proximity Sensor"
+    var y = 165f
 
-        Sensor.TYPE_PRESSURE ->
-            "Barometer"
+    for (sensor in sensorList) {
 
-        Sensor.TYPE_GRAVITY ->
-            "Gravity Sensor"
+        if (y > height - 50f) {
+            break
+        }
 
-        Sensor.TYPE_LINEAR_ACCELERATION ->
-            "Linear Acceleration"
+        paint.color = Color.rgb(25, 25, 30)
 
-        Sensor.TYPE_ROTATION_VECTOR ->
-            "Rotation Vector"
+        canvas.drawRoundRect(
+            25f,
+            y - 28f,
+            width - 25f,
+            y + 35f,
+            14f,
+            14f,
+            paint
+        )
 
-        Sensor.TYPE_GAME_ROTATION_VECTOR ->
-            "Game Rotation Vector"
+        paint.color = Color.WHITE
+        paint.textSize = 19f
+        paint.typeface = Typeface.DEFAULT_BOLD
 
-        Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR ->
-            "Geomagnetic Rotation"
+        canvas.drawText(
+            sensor.name,
+            40f,
+            y,
+            paint
+        )
 
-        Sensor.TYPE_STEP_COUNTER ->
-            "Step Counter"
+        paint.color = Color.GRAY
+        paint.textSize = 14f
+        paint.typeface = Typeface.DEFAULT
 
-        Sensor.TYPE_STEP_DETECTOR ->
-            "Step Detector"
+        canvas.drawText(
+            sensorTypeName(sensor.type),
+            40f,
+            y + 23f,
+            paint
+        )
 
-        Sensor.TYPE_SIGNIFICANT_MOTION ->
-            "Significant Motion"
+        paint.color = Color.rgb(80, 220, 120)
+        paint.textSize = 16f
+        paint.typeface = Typeface.DEFAULT_BOLD
 
-        Sensor.TYPE_HEART_RATE ->
-            "Heart Rate"
+        canvas.drawText(
+            "OK",
+            width - 70f,
+            y + 5f,
+            paint
+        )
 
-        Sensor.TYPE_RELATIVE_HUMIDITY ->
-            "Humidity"
-
-        Sensor.TYPE_AMBIENT_TEMPERATURE ->
-            "Ambient Temperature"
-
-        else ->
-            "Sensor Type $type"
+        y += 78f
     }
 }
+
+
 private fun drawFeatureChecker(canvas: Canvas) {
     // 既存コード
 }
