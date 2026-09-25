@@ -21,6 +21,19 @@ class MainActivity : Activity() {
 
         root = BenchView(this)
         setContentView(root)
+
+        // Back gesture
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(
+                0
+            ) {
+                root.goBack()
+            }
+        }
+    }
+
+    override fun onBackPressed() {
+        root.goBack()
     }
 
     override fun onResume() {
@@ -79,6 +92,30 @@ class MainActivity : Activity() {
             setBackgroundColor(Color.BLACK)
         }
 
+        fun goBack() {
+
+            if (menuOpen) {
+                menuOpen = false
+                invalidate()
+                return
+            }
+
+            if (screen == "gpu") {
+                running = false
+                screen = "home"
+                invalidate()
+                return
+            }
+
+            if (screen != "home") {
+                screen = "home"
+                invalidate()
+                return
+            }
+
+            (context as? Activity)?.finish()
+        }
+
         fun start() {
             if (screen == "gpu") {
                 startBenchmark()
@@ -94,8 +131,8 @@ class MainActivity : Activity() {
         fun startBenchmark() {
             screen = "gpu"
             menuOpen = false
-
             running = true
+
             startTime = System.currentTimeMillis()
             lastFrameTime = startTime
             frameCount = 0
@@ -130,6 +167,7 @@ class MainActivity : Activity() {
             }
         }
 
+        // Header
         private fun drawHeader(canvas: Canvas, title: String) {
 
             paint.style = Paint.Style.FILL
@@ -139,31 +177,32 @@ class MainActivity : Activity() {
                 0f,
                 0f,
                 width.toFloat(),
-                90f,
+                125f,
                 paint
             )
 
             paint.color = Color.WHITE
-            paint.textSize = 34f
+            paint.textSize = 48f
             paint.typeface = Typeface.DEFAULT_BOLD
 
             canvas.drawText(
                 "☰",
-                25f,
-                58f,
+                28f,
+                78f,
                 paint
             )
 
-            paint.textSize = 28f
+            paint.textSize = 32f
 
             canvas.drawText(
                 title,
-                85f,
-                57f,
+                105f,
+                77f,
                 paint
             )
         }
 
+        // Home
         private fun drawHome(canvas: Canvas) {
 
             canvas.drawColor(Color.BLACK)
@@ -171,29 +210,30 @@ class MainActivity : Activity() {
             drawHeader(canvas, "NIDA BENCH")
 
             paint.color = Color.WHITE
-            paint.textSize = 38f
+            paint.textSize = 42f
+            paint.typeface = Typeface.DEFAULT_BOLD
 
             canvas.drawText(
                 "Smartphone Toolkit",
                 30f,
-                155f,
+                205f,
                 paint
             )
 
             paint.color = Color.GRAY
-            paint.textSize = 22f
+            paint.textSize = 25f
 
             canvas.drawText(
                 "Benchmark & Device Checker",
                 30f,
-                190f,
+                245f,
                 paint
             )
 
             drawCard(
                 canvas,
                 30f,
-                240f,
+                295f,
                 width / 2f - 45f,
                 180f,
                 "GPU",
@@ -203,7 +243,7 @@ class MainActivity : Activity() {
             drawCard(
                 canvas,
                 width / 2f + 15f,
-                240f,
+                295f,
                 width / 2f - 45f,
                 180f,
                 "FEATURE",
@@ -213,7 +253,7 @@ class MainActivity : Activity() {
             drawCard(
                 canvas,
                 30f,
-                450f,
+                505f,
                 width / 2f - 45f,
                 180f,
                 "DEVICE",
@@ -223,7 +263,7 @@ class MainActivity : Activity() {
             drawCard(
                 canvas,
                 width / 2f + 15f,
-                450f,
+                505f,
                 width / 2f - 45f,
                 180f,
                 "RESULT",
@@ -231,6 +271,7 @@ class MainActivity : Activity() {
             )
         }
 
+        // Card
         private fun drawCard(
             canvas: Canvas,
             x: Float,
@@ -255,27 +296,28 @@ class MainActivity : Activity() {
             )
 
             paint.color = Color.WHITE
-            paint.textSize = 28f
+            paint.textSize = 32f
             paint.typeface = Typeface.DEFAULT_BOLD
 
             canvas.drawText(
                 title,
                 x + 20f,
-                y + 65f,
+                y + 70f,
                 paint
             )
 
             paint.color = Color.LTGRAY
-            paint.textSize = 20f
+            paint.textSize = 23f
 
             canvas.drawText(
                 subtitle,
                 x + 20f,
-                y + 100f,
+                y + 110f,
                 paint
             )
         }
 
+        // Device Info
         private fun drawDeviceInfo(canvas: Canvas) {
 
             canvas.drawColor(Color.BLACK)
@@ -295,7 +337,7 @@ class MainActivity : Activity() {
                 "Hardware     : ${Build.HARDWARE}"
             )
 
-            var y = 145f
+            var y = 180f
 
             for (line in info) {
 
@@ -310,6 +352,7 @@ class MainActivity : Activity() {
             }
         }
 
+        // Feature Checker
         private fun drawFeatureChecker(canvas: Canvas) {
 
             canvas.drawColor(Color.BLACK)
@@ -328,7 +371,7 @@ class MainActivity : Activity() {
                 "Vibrator"
             )
 
-            var y = 135f
+            var y = 180f
 
             paint.textSize = 25f
 
@@ -337,29 +380,42 @@ class MainActivity : Activity() {
                 val available = when (feature) {
 
                     "Camera" ->
-                        hasFeature(PackageManager.FEATURE_CAMERA_ANY)
+                        hasFeature(
+                            PackageManager.FEATURE_CAMERA_ANY
+                        )
 
                     "Front Camera" ->
-                        hasFeature(PackageManager.FEATURE_CAMERA_FRONT)
+                        hasFeature(
+                            PackageManager.FEATURE_CAMERA_FRONT
+                        )
 
                     "NFC" ->
-                        hasFeature(PackageManager.FEATURE_NFC)
+                        hasFeature(
+                            PackageManager.FEATURE_NFC
+                        )
 
                     "Bluetooth" ->
-                        hasFeature(PackageManager.FEATURE_BLUETOOTH)
+                        hasFeature(
+                            PackageManager.FEATURE_BLUETOOTH
+                        )
 
                     "GPS" ->
-                        hasFeature(PackageManager.FEATURE_LOCATION_GPS)
+                        hasFeature(
+                            PackageManager.FEATURE_LOCATION_GPS
+                        )
 
                     "Accelerometer" ->
-                        hasFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER)
+                        hasFeature(
+                            PackageManager.FEATURE_SENSOR_ACCELEROMETER
+                        )
 
                     "Gyroscope" ->
-                        hasFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE)
+                        hasFeature(
+                            PackageManager.FEATURE_SENSOR_GYROSCOPE
+                        )
 
                     "Fingerprint" ->
                         Build.VERSION.SDK_INT >= 23
-
 
                     else -> false
                 }
@@ -394,6 +450,7 @@ class MainActivity : Activity() {
             return context.packageManager.hasSystemFeature(feature)
         }
 
+        // Menu
         private fun drawMenu(canvas: Canvas) {
 
             paint.color = Color.argb(
@@ -416,29 +473,29 @@ class MainActivity : Activity() {
             canvas.drawRect(
                 0f,
                 0f,
-                width * 0.78f,
+                width * 0.82f,
                 height.toFloat(),
                 paint
             )
 
             paint.color = Color.WHITE
-            paint.textSize = 30f
+            paint.textSize = 36f
             paint.typeface = Typeface.DEFAULT_BOLD
 
             canvas.drawText(
                 "NIDA BENCH",
                 35f,
-                70f,
+                85f,
                 paint
             )
 
             paint.color = Color.GRAY
-            paint.textSize = 18f
+            paint.textSize = 22f
 
             canvas.drawText(
                 "Smartphone Toolkit",
                 35f,
-                105f,
+                125f,
                 paint
             )
 
@@ -450,9 +507,9 @@ class MainActivity : Activity() {
                 "SETTINGS"
             )
 
-            var y = 180f
+            var y = 215f
 
-            paint.textSize = 23f
+            paint.textSize = 27f
 
             for (item in items) {
 
@@ -465,10 +522,11 @@ class MainActivity : Activity() {
                     paint
                 )
 
-                y += 65f
+                y += 80f
             }
         }
 
+        // GPU
         private fun drawGPU(canvas: Canvas) {
 
             if (!running) {
@@ -537,8 +595,7 @@ class MainActivity : Activity() {
 
             if (testTime > 1f) {
 
-                fps =
-                    frameCount / testTime
+                fps = frameCount / testTime
 
                 if (fps < minFps) {
                     minFps = fps
@@ -556,6 +613,7 @@ class MainActivity : Activity() {
             }
         }
 
+        // Particles
         private fun updateParticles(delta: Float) {
 
             for (particle in particles) {
@@ -583,6 +641,7 @@ class MainActivity : Activity() {
             }
         }
 
+        // Background
         private fun drawBackground(canvas: Canvas) {
 
             val cx = width / 2f
@@ -620,6 +679,7 @@ class MainActivity : Activity() {
             }
         }
 
+        // Particles
         private fun drawParticles(canvas: Canvas) {
 
             for (particle in particles) {
@@ -653,6 +713,7 @@ class MainActivity : Activity() {
             }
         }
 
+        // Effects
         private fun drawEffects(canvas: Canvas) {
 
             val cx = width / 2f
@@ -695,6 +756,7 @@ class MainActivity : Activity() {
             paint.style = Paint.Style.FILL
         }
 
+        // GPU Result
         private fun drawGPUFinished(canvas: Canvas) {
 
             canvas.drawColor(Color.BLACK)
@@ -733,7 +795,10 @@ class MainActivity : Activity() {
             paint.textAlign = Paint.Align.LEFT
         }
 
-        override fun onTouchEvent(event: android.view.MotionEvent): Boolean {
+        // Touch
+        override fun onTouchEvent(
+            event: MotionEvent
+        ): Boolean {
 
             if (event.action != MotionEvent.ACTION_UP) {
                 return true
@@ -743,7 +808,7 @@ class MainActivity : Activity() {
             val y = event.y
 
             // Menu button
-            if (x < 80f && y < 100f) {
+            if (x < 130f && y < 130f) {
 
                 menuOpen = !menuOpen
                 invalidate()
@@ -754,7 +819,7 @@ class MainActivity : Activity() {
             if (menuOpen) {
 
                 val menuWidth =
-                    width * 0.78f
+                    width * 0.82f
 
                 if (x > menuWidth) {
 
@@ -766,27 +831,28 @@ class MainActivity : Activity() {
 
                 when {
 
-                    y in 130f..210f -> {
+                    y in 155f..245f -> {
                         screen = "home"
                         menuOpen = false
                     }
 
-                    y in 210f..275f -> {
+                    y in 245f..325f -> {
                         startBenchmark()
                         return true
                     }
 
-                    y in 275f..340f -> {
+                    y in 325f..405f -> {
                         screen = "device"
                         menuOpen = false
                     }
 
-                    y in 340f..410f -> {
+                    y in 405f..485f -> {
                         screen = "features"
                         menuOpen = false
                     }
 
-                    y in 410f..490f -> {
+                    y in 485f..570f -> {
+
                         Toast.makeText(
                             context,
                             "Settingsはこれから！",
@@ -803,7 +869,7 @@ class MainActivity : Activity() {
 
             if (screen == "home") {
 
-                if (y in 240f..420f) {
+                if (y in 295f..475f) {
 
                     if (x < width / 2f) {
                         startBenchmark()
@@ -815,7 +881,7 @@ class MainActivity : Activity() {
                     return true
                 }
 
-                if (y in 450f..630f) {
+                if (y in 505f..685f) {
 
                     if (x < width / 2f) {
                         screen = "device"
