@@ -160,14 +160,17 @@ private var sensorList: List<Sensor> = emptyList()
             if (screen == "device") {
                 drawDeviceInfo(canvas)
             }
+if (screen == "features") {
+    drawFeatureChecker(canvas)
+}
 
-            if (screen == "features") {
-                drawFeatureChecker(canvas)
-            }
+if (screen == "sensors") {
+    drawSensorChecker(canvas)
+}
 
-            if (screen == "gpu") {
-                drawGPU(canvas)
-            }
+if (screen == "gpu") {
+    drawGPU(canvas)
+}
 
             if (menuOpen) {
                 drawMenu(canvas)
