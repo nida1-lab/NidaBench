@@ -11,6 +11,8 @@ import android.widget.Toast
 import kotlin.random.Random
 import kotlin.math.sin
 import kotlin.math.cos
+import android.hardware.Sensor
+import android.hardware.SensorManager
 
 class MainActivity : Activity() {
 
