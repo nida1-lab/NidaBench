@@ -74,6 +74,11 @@ class MainActivity : Activity() {
         private var fps = 0f
         private var minFps = 999f
         private var testTime = 0f
+        // Sensors
+private val sensorManager =
+    context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+private var sensorList: List<Sensor> = emptyList()
 
         init {
             textPaint.typeface = Typeface.DEFAULT_BOLD
